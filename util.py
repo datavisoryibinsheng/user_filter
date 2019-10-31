@@ -49,9 +49,9 @@ def write_csv_to_file(path, header, data):
 
 
 if __name__ == '__main__':
-    z = read_xlsx(path='tmp/dv_input/client/Muse_2019.08_post_back_attribution.xlsx')
+    z = read_xlsx(path='tmp/dv_input/client/test.xlsx')
     print(z[:5])
-    header, z = load_data_from_csv(path='tmp/dv_input/dv/report.201909.kissmyads_int.csv')
+    header, z = load_data_from_csv(path='tmp/dv_input/dv/test.csv')
     print(header)
     print(z[:5])
     write_csv_to_file('tmp/dv_output/output.txt', header, z)

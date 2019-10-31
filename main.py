@@ -25,10 +25,17 @@ if __name__ == '__main__':
     b = set()
     for root, subdirs, files in os.walk(client_root):
         for file in files:
-            if '.' not in file or not file.endswith('.xlsx'):
+            if '.' not in file:
                 continue
-            path = os.path.join(root, file)
-            t = read_xlsx(path)
+            if file.endswith('.xlsx'):
+                path = os.path.join(root, file)
+                t = read_xlsx(path)
+            elif file.endswith('.csv'):
+                path = os.path.join(root, file)
+                (header, t) = load_data_from_csv(path)
+            else:
+                continue
+
             for row in t:
                 if 'AppsFlyer ID' in row:
                     b.add(row['AppsFlyer ID'])
