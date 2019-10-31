@@ -1,6 +1,6 @@
 import os
 
-targets = ['tmp/dv_input/dv', 'tmp/dv_input/client', 'tmp/dv_output']
+targets = ['tmp','tmp/dv_input','tmp/dv_input/dv', 'tmp/dv_input/client', 'tmp/dv_output']
 
 for target in targets:
     try:
