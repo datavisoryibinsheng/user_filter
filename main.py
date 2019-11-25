@@ -1,14 +1,16 @@
 import argparse
-import json
+import re
 import os
 
 from util import uniform_read
 from util import uniform_write
 
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_dir', default='tmp/dv_input')
+parser.add_argument('--input_pattern', default=None)
 parser.add_argument('--output_dir', default='tmp/dv_output')
-parser.add_argument('--client_dir_name', default='client')
+parser.add_argument('--client_root', default='tmp/dv_input/client')
 parser.add_argument('--client_key_col', default='AppsFlyer ID')
 parser.add_argument('--our_key_col', default='user_id')
 parser.add_argument('--dv_dir_name', default='dv')
@@ -16,7 +18,7 @@ ns = parser.parse_args()
 
 if __name__ == '__main__':
     # create dirs
-    client_root = os.path.join(ns.input_dir, ns.client_dir_name)
+    client_root = ns.client_root
     dv_root = os.path.join(ns.input_dir, ns.dv_dir_name)
     for root, subdirs, files in os.walk(dv_root):
         try:
@@ -30,6 +32,9 @@ if __name__ == '__main__':
         for file in files:
             if '.' not in file:
                 continue
+            if ns.input_file_pattern:
+                if not re.match(ns.input_pattern, file):
+                    continue
             path = os.path.join(root, file)
             _, t = uniform_read(path)
             for row in t:
