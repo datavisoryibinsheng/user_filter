@@ -1,9 +1,9 @@
 import os
 
-targets = ['tmp','tmp/dv_input','tmp/dv_input/dv', 'tmp/dv_input/client', 'tmp/dv_output']
+targets = ['tmp/dv_input/dv', 'tmp/dv_input/client']
 
 for target in targets:
     try:
-        os.mkdir(target)
+        os.makedirs(target)
     except FileExistsError:
         print("{} exist!".format(target))

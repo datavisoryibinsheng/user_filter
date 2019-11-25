@@ -1,8 +1,9 @@
-import openpyxl
 import csv
+import json
+import openpyxl
 
 
-def read_xlsx(path, header=None):
+def load_data_from_xlsx(path, header=None):
     """
     :param path: xlsx file path
     :return:
@@ -27,7 +28,7 @@ def read_xlsx(path, header=None):
                 v = ''
             tmp[k] = v
         ret.append(tmp)
-    return ret
+    return header, ret
 
 
 def load_data_from_csv(path):
@@ -41,17 +42,63 @@ def load_data_from_csv(path):
     return header, ret
 
 
+def load_data_from_json(path):
+    ret = []
+    header = set()
+    with open(path, 'r', encoding='utf-8', errors='ignore') as fp:
+        for line in fp.readlines():
+            row = json.loads(line)
+            header.add(**row.keys())
+            ret.append(row)
+    return list(header), ret
+
+
+def write_json_to_file(path, data):
+    with open(path, 'w', encoding='utf-8') as fp:
+        for row in data:
+            fp.write(json.dumps(row, ensure_ascii=False))
+            fp.write('\n')
+
+
 def write_csv_to_file(path, header, data):
+    data = [{k: v for k, v in row.items() if k in header} for row in data]
     with open(path, 'w', encoding='utf-8') as ofile:
         writer = csv.DictWriter(ofile, fieldnames=header)
         writer.writeheader()
         writer.writerows(data)
 
 
+def uniform_read(path: str):
+    """
+    read json, csv, xlsx dict file
+    :param path: path
+    :param header: optional for json
+    :param data:
+    :return:
+    """
+    if path.endswith('.json'):
+        return load_data_from_json(path)
+    if path.endswith('.csv'):
+        return load_data_from_csv(path)
+    if path.endswith('.xlsx'):
+        return load_data_from_xlsx(path)
+    return []
+
+
+def uniform_write(path: str, data, header=None):
+    if path.endswith('.json'):
+        write_json_to_file(path, data)
+        return
+    if path.endswith('.csv'):
+        if not header:
+            header = data[0].keys()
+        write_csv_to_file(path, header, data)
+
+
 if __name__ == '__main__':
-    z = read_xlsx(path='tmp/dv_input/client/test.xlsx')
+    _, z = uniform_read(path='tmp/dv_input/client/Muse_2019.08_post_back_attribution.xlsx')
     print(z[:5])
-    header, z = load_data_from_csv(path='tmp/dv_input/dv/test.csv')
-    print(header)
+    uniform_write('tmp/dv_output/output.json', z)
+    header, z = uniform_read(path='tmp/dv_input/dv/report.201909.kissmyads_int.csv')
     print(z[:5])
-    write_csv_to_file('tmp/dv_output/output.txt', header, z)
+    uniform_write('tmp/dv_output/output.csv', z, header)

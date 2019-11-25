@@ -1,13 +1,16 @@
-import os
 import argparse
-from util import write_csv_to_file
-from util import load_data_from_csv
-from util import read_xlsx
+import json
+import os
+
+from util import uniform_read
+from util import uniform_write
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input_dir', default='tmp/dv_input')
 parser.add_argument('--output_dir', default='tmp/dv_output')
 parser.add_argument('--client_dir_name', default='client')
+parser.add_argument('--client_key_col', default='AppsFlyer ID')
+parser.add_argument('--our_key_col', default='user_id')
 parser.add_argument('--dv_dir_name', default='dv')
 ns = parser.parse_args()
 
@@ -17,7 +20,7 @@ if __name__ == '__main__':
     dv_root = os.path.join(ns.input_dir, ns.dv_dir_name)
     for root, subdirs, files in os.walk(dv_root):
         try:
-            os.mkdir(root.replace('dv_input', 'dv_output'))
+            os.makedirs(root.replace('dv_input', 'dv_output'))
         except FileExistsError as e:
             pass
 
@@ -27,25 +30,17 @@ if __name__ == '__main__':
         for file in files:
             if '.' not in file:
                 continue
-            if file.endswith('.xlsx'):
-                path = os.path.join(root, file)
-                t = read_xlsx(path)
-            elif file.endswith('.csv'):
-                path = os.path.join(root, file)
-                (header, t) = load_data_from_csv(path)
-            else:
-                continue
-
+            path = os.path.join(root, file)
+            _, t = uniform_read(path)
             for row in t:
-                if 'AppsFlyer ID' in row:
-                    b.add(row['AppsFlyer ID'])
+                if ns.client_key_col in row:
+                    b.add(row[ns.client_key_col])
 
     for root, subdirs, files in os.walk(dv_root):
         for file in files:
-            if '.' not in file or not file.endswith('.csv'):
-                continue
             path = os.path.join(root, file)
             opath = os.path.join(path.replace('dv_input', 'dv_output'))
-            header, a = load_data_from_csv(path)
-            a = [row for row in a if 'user_id' in row and row['user_id'] not in b]
-            write_csv_to_file(opath, header, a)
+            header, a = uniform_read(path)
+            a = [row for row in a if ns.our_key_col in row and row[ns.our_key_col] not in b]
+            uniform_write(opath, a, header)
+
